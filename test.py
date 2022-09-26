@@ -1,3 +1,4 @@
+import sys
 from LexicalAnalyzer import LexicalAnalyzer
 
 def readText():
@@ -18,7 +19,7 @@ def parenTest():
     print(s)
 
 def main():
-    LexicalAnalyzer("bitops1.scl")
+    LexicalAnalyzer(sys.argv[1])
     #readText()
     #equalityTest()
     #parenTest()

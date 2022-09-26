@@ -1,3 +1,4 @@
+import json
 from Token import Token
 from TokenType import TokenType
 
@@ -15,6 +16,8 @@ class LexicalAnalyzer:
         for i in self.tokens:
             print(f"lexeme: {i.getLexeme()}\ntoken type: {i.getTokType()}\n")
         print(f"lines: {self.lineNumber}")
+        #tokens_json = json.dumps(self.tokens)
+        #return tokens_json
     
     def processLine(self, line, lineNumber):
         if (line == None or lineNumber < 1):
