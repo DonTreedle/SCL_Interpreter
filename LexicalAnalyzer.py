@@ -237,12 +237,12 @@ class LexicalAnalyzer:
             line = line.replace(")", " )")
         return line
     
-    def getNextToken(self):
+    def getNextToken(self) -> Token:
         if not self.tokens:
             raise Exception("Lexical Exception")
         return self.tokens.remove(0)
     
-    def getLookaheadToken(self):
+    def getLookaheadToken(self) -> Token:
         if not self.tokens:
             raise Exception("Lexical Exception")
         return self.tokens[0]

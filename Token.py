@@ -1,5 +1,7 @@
 import json
 
+from TokenType import TokenType
+
 
 class Token:
     def __init__(self, rowNumber, colNumber, lexeme, tokType):
@@ -16,13 +18,13 @@ class Token:
         self.lexeme = lexeme
         self.tokType = tokType
     
-    def getRowNumber(self):
+    def getRowNumber(self) -> int:
         return self.rowNumber
-    def getColNumber(self):
+    def getColNumber(self) -> int:
         return self.colNumber
     def getLexeme(self):
         return self.lexeme
-    def getTokType(self):
+    def getTokType(self) -> TokenType:
         return self.tokType
 
     def toJson(self):
