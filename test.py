@@ -19,7 +19,7 @@ def parenTest():
     print(s)
 
 def main():
-    LexicalAnalyzer(sys.argv[1])
+    LexicalAnalyzer('welcome.scl')
     #readText()
     #equalityTest()
     #parenTest()

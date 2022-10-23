@@ -10,7 +10,7 @@ class Parser:
     def __init__(self, filename):
         self.lex = LexicalAnalyzer(filename)
     
-    def parse(self):
+    def parse(self): #imports -> symbols -> forward_refs -> specifications -> globals -> implementations
         tok = self.lex.getNextToken()
         self.match(tok, TokenType.FUNCTION_TOK)
         

@@ -39,6 +39,8 @@ class LexicalAnalyzer:
                 line = self.splitOnParen(tokType)
                 lexeme = "("
             self.tokens.append(Token(lineNumber + 1, index + 1, lexeme, tokType))
+            if(tokType == TokenType.DESC_TOK):
+                self.skipDescription(lineNumber)
             index += len(lexeme)
             index = self.skipWhiteSpace(line, index)
 
@@ -64,7 +66,6 @@ class LexicalAnalyzer:
                 #TODO CHECK FOR COMMA
             elif(lexeme == "description"):
                 tokType = TokenType.DESC_TOK
-                self.skipDescription(lineNumber)
             elif(lexeme == "symbol"):
                 tokType = TokenType.SYM_TOK
             elif(lexeme == "import"):
