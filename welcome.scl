@@ -6,7 +6,7 @@ description
  */
 import "scl.h"
 implementations
-function main return type integer is
+    function main return type integer is
 variables
     define x of type double   // a variable declaration
 begin

@@ -15,7 +15,7 @@ class LexicalAnalyzer:
         self.tokens.append(Token(self.lineNumber, 1, "EOS", TokenType.EOS_TOK))
         for i in self.tokens:
             print(f"lexeme: {i.getLexeme()}\ntoken type: {i.getTokType()}\n")
-        print(f"lines: {self.lineNumber}")
+        #print(f"lines: {self.lineNumber}")
         #tokens_json = json.dumps(self.tokens)
         #return tokens_json
     
@@ -38,9 +38,13 @@ class LexicalAnalyzer:
             elif(tokType == TokenType.LEFT_PAREN_TOK):
                 line = self.splitOnParen(tokType)
                 lexeme = "("
-            self.tokens.append(Token(lineNumber + 1, index + 1, lexeme, tokType))
             if(tokType == TokenType.DESC_TOK):
                 self.skipDescription(lineNumber)
+                index += len(lexeme)
+                index = self.skipWhiteSpace(line, index)
+                continue
+            self.tokens.append(Token(lineNumber + 1, index + 1, lexeme, tokType))
+            
             index += len(lexeme)
             index = self.skipWhiteSpace(line, index)
 
@@ -131,7 +135,7 @@ class LexicalAnalyzer:
             if(self.allDigits(lexeme)):
                 tokType = TokenType.CONST_TOK
             elif(lexeme[-1] == 'h'):
-                tokType = TokenType.HCONST_TOK
+                tokType = TokenType.HEX_TOK
             elif(lexeme.isdecimal()):
                 tokType = TokenType.CONST_TOK
             else:
@@ -216,14 +220,14 @@ class LexicalAnalyzer:
             index = self.skipWhiteSpace(line, index)
             lexeme = self.getLexeme(line, lineNumber, index)
             if(lexeme == "*/"):
-                self.tokens.append(Token(lineNumber + 1, index + 1, "*/", TokenType.END_DESC_TOK))
+                #self.tokens.append(Token(lineNumber + 1, index + 1, "*/", TokenType.END_DESC_TOK))
                 self.lineNumber = lineNumber
                 return
     
     def skipLineComment(self, index, lineNumber):
         comment = self.line[index:-1]
-        self.tokens.append(Token(lineNumber + 1, index + 1, comment, TokenType.COMMENT_TOK))
-        self.sourceCode.readline()
+        #self.tokens.append(Token(lineNumber + 1, index + 1, comment, TokenType.COMMENT_TOK))
+        #self.sourceCode.readline()
         return
 
     def splitOnComma(self):
@@ -241,15 +245,18 @@ class LexicalAnalyzer:
     def getNextToken(self) -> Token:
         if not self.tokens:
             raise Exception("Lexical Exception")
-        return self.tokens.remove(0)
+        return self.tokens.pop(0)
     
     def getLookaheadToken(self) -> Token:
         if not self.tokens:
             raise Exception("Lexical Exception")
         return self.tokens[0]
     
-    def isValidIdentifier(self, ch):
+    def isValidIdentifier(self, ch) -> bool:
         return ch.isalpha()
+    
+    def isValidType(self, type) -> bool:
+        return type in (TokenType.INT_TOK, TokenType.SHORT_TOK, TokenType.LONG_TOK, TokenType.DOUBLE_TOK, TokenType.BYTE_TOK, TokenType.HEX_TOK)
 
     def printLex(self):
         for i in self.tokens:

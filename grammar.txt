@@ -16,7 +16,7 @@ import_file : IMPORT header_file_name
             ;
 header_file_name : LANGB fname RANGB          
                  | QUOTES fname QUOTES        
-				 ;
+		 ;
 fname : IDENTIFIER                    
       | fname shlash IDENTIFIER       
       ;
@@ -32,7 +32,7 @@ symbol_def : SYMBOL IDENTIFIER symbol_value
 symbol_value : IDENTIFIER  
              | STRING     
              | UNSIGNICON  
-			 | SIGNICON    
+	     | SIGNICON    
              | HCON        
              | FCON        
              ; 			 

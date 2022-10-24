@@ -1,20 +1,52 @@
 from Arithmetic import BinaryExpression, BooleanExpression, Constant, Expression, Id, Operator, RelativeOperator
 from AssignmentStatement import AssignmentStatement
-from Statement import ForStatement, IfStatement, PrintStatement, Statement, WhileStatement, Iter
+from Memory import Memory
+from Program import Program
+from Statement import Block, DefineStatement, ForStatement, IfStatement, PrintStatement, Statement, WhileStatement, Iter
 from Token import Token
 from TokenType import TokenType
 from LexicalAnalyzer import LexicalAnalyzer
-from Block import Block
+#from Block import Block
 
 class Parser:
     def __init__(self, filename):
         self.lex = LexicalAnalyzer(filename)
+        self.mem = Memory()
     
-    def parse(self): #imports -> symbols -> forward_refs -> specifications -> globals -> implementations
+    def parse(self) -> Program: #imports -> symbols -> global declarations -> implementations
         tok = self.lex.getNextToken()
-        self.match(tok, TokenType.FUNCTION_TOK)
+        while(tok.getTokType() != TokenType.EOS_TOK):
+            if (tok.getTokType() == TokenType.IMP_TOK):
+                self.getImports()
+            if (tok.getTokType() == TokenType.SYM_TOK):
+                self.getSymbols()
+            if (tok.getTokType() == TokenType.GLOB_TOK):
+                self.getGlobalDeclarations()
+            if (tok.getTokType() == TokenType.IMPLE_TOK):
+                self.getFunctions()
+            tok = self.lex.getNextToken()
+        print('no errors found')
         
-    
+    def getImports(self):
+        tok = self.lex.getNextToken()
+        print(tok.getLexeme())
+        self.match(tok, TokenType.STRING_TOK)
+
+    def getSymbols(self) -> Statement:
+        var = self.getId()
+        expr = self.getArithmeticExpression()
+        
+        return AssignmentStatement(var, expr)
+
+    def getGlobalDeclarations(self) -> Block:
+        tok = self.lex.getNextToken()
+        self.match(tok, TokenType.DECL_TOK)
+        tok = self.lex.getNextToken()
+        if (tok.getTokType() == TokenType.VARS_TOK):
+            varsblk = self.getBlock()
+        
+        return varsblk
+        
     def getBlock(self) -> Block:
         blk = Block()
         tok = self.lex.getLookaheadToken()
@@ -24,9 +56,35 @@ class Parser:
             tok = self.lex.getLookaheadToken()
         
         return blk
-    
+
+    def getFunctions(self):
+        blks = []
+        tok = self.lex.getLookaheadToken()
+        while (tok.getTokType() == TokenType.FUNCTION_TOK):
+            blks.append(self.getFunction())
+            tok = self.lex.getLookaheadToken()
+
+    def getFunction(self):
+        tok = self.lex.getNextToken()
+        self.match(tok, TokenType.FUNCTION_TOK)
+        functionName = self.getId(TokenType.FUNCTION_TOK)
+        tok = self.lex.getNextToken()
+        self.match(tok, TokenType.IS_TOK)
+        tok = self.lex.getNextToken()
+        if (tok.getTokType() == TokenType.VARS_TOK):
+            varsblk = self.getBlock()
+        tok = self.lex.getNextToken()
+        if (tok.getTokType() == TokenType.BEGIN_TOK):
+            funcblk = self.getBlock()
+        tok = self.lex.getNextToken()
+        self.match(tok, TokenType.EXIT_TOK)
+        tok = self.lex.getNextToken()
+        self.match(tok, TokenType.ENDFUN_TOK)
+        tok = self.lex.getNextToken()
+        self.match(tok, TokenType.ID_TOK)
+        return [varsblk, funcblk]
+
     def getStatement(self) -> Statement:
-        stmt = Statement()
         tok = self.lex.getLookaheadToken()
         if (tok.getTokType() == TokenType.IF_TOK):
             stmt = self.getIfStatement()
@@ -34,17 +92,29 @@ class Parser:
             stmt = self.getWhileStatement()
         elif (tok.getTokType() == TokenType.PRINT_TOK):
             stmt = self.getPrintStatement()
-        elif (tok.getTokType() == TokenType.ID_TOK):
+        elif (tok.getTokType() == TokenType.SET_TOK):
             stmt = self.getAssignmentStatement()
         elif (tok.getTokType() == TokenType.FOR_TOK):
             stmt = self.getForStatement()
+        elif (tok.getTokType() == TokenType.DEFINE_TOK):
+            stmt = self.getDefineStatement()
         else:
-            raise Exception()
+            raise Exception(f'Invalid Statement type: {tok.getTokType()}')
 
         return stmt
     
+    def getDefineStatement(self) -> Statement:
+        tok = self.lex.getNextToken()
+        self.match(tok, TokenType.DEFINE_TOK)
+        var = self.getId(TokenType.DEFINE_TOK)
+        var.setId(value=None)
+        return DefineStatement(var, tok, self.mem)
+
     def getAssignmentStatement(self) -> Statement:
-        var = self.getId()
+        tok = self.lex.getNextToken()
+        self.match(tok, TokenType.SET_TOK)
+        tok = self.lex.getNextToken()
+        var = Id(ch = tok.getLexeme(), mem = self.mem)
         tok = self.lex.getNextToken()
         self.match(tok, TokenType.ASSIGN_TOK)
         expr = self.getArithmeticExpression()
@@ -53,11 +123,9 @@ class Parser:
     def getPrintStatement(self) -> Statement:
         tok = self.lex.getNextToken()
         self.match(tok, TokenType.PRINT_TOK)
-        tok = self.lex.getNextToken()
-        self.match(tok, TokenType.LEFT_PAREN_TOK)
         expr = self.getArithmeticExpression()
-        tok = self.lex.getNextToken()
-        self.match(tok, TokenType.RIGHT_PAREN_TOK)
+        while(self.lex.getLookaheadToken().getTokType() in (TokenType.ID_TOK, TokenType.STRING_TOK)):
+            self.lex.getNextToken()
         
         return PrintStatement(expr)
 
@@ -98,18 +166,20 @@ class Parser:
         
         return IfStatement(expr, blk1, blk2)
 
+    def isValidIdentifier(self, ch) -> bool:
+        return ch.isalpha()
+
     def isValidStartOfStatement(self, tok : Token) -> bool:
         if (tok == None):
-            raise Exception()
+            raise Exception(f'There is literally nothing here')
         
-        return tok.getTokType() == TokenType.ID_TOK or tok.getTokType() == TokenType.IF_TOK or tok.getTokType() == TokenType.WHILE_TOK or tok.getTokType() == TokenType.FOR_TOK or tok.getTokType() == TokenType.PRINT_TOK
+        return tok.getTokType() in (TokenType.SET_TOK, TokenType.IF_TOK, TokenType.WHILE_TOK, TokenType.FOR_TOK, TokenType.PRINT_TOK, TokenType.DEFINE_TOK)
     
     def getArithmeticExpression(self) -> Expression:
-        expr = Expression()
         tok = self.lex.getLookaheadToken()
         if (tok.getTokType() == TokenType.ID_TOK):
             expr = self.getId()
-        elif (tok.getTokType() == TokenType.CONST_TOK):
+        elif (tok.getTokType() in (TokenType.CONST_TOK, TokenType.STRING_TOK)):
             expr = self.getConstant()
         else:
             expr = self.getBinaryExpression()
@@ -117,7 +187,6 @@ class Parser:
         return expr
     
     def getBinaryExpression(self) -> Expression:
-        op = Operator()
         tok = self.lex.getNextToken()
         if (tok.getTokType() == TokenType.ADD_TOK):
             self.match(tok, TokenType.ADD_TOK)
@@ -141,7 +210,7 @@ class Parser:
             self.match(tok, TokenType.MOD_TOK)
             op = Operator.MOD_OP
         else:
-            raise Exception()
+            raise Exception(f'Invalid BinaryExpression: {tok.getTokType()}')
         
         expr1 = self.getArithmeticExpression()
         expr2 = self.getArithmeticExpression()
@@ -165,28 +234,55 @@ class Parser:
         elif (tok.getTokType() == TokenType.LE_TOK):
             op = RelativeOperator.LE_OP
         else:
-            raise Exception() #TODO
+            raise Exception(f'Invalid BooleanExpression: {tok.getTokType()}') #TODO
         
         expr1 = self.getArithmeticExpression()
         expr2 = self.getArithmeticExpression()
         
         return BooleanExpression(op, expr1, expr2)
         
-    def getId(self) -> Id:
+    def getId(self, tokenType) -> Id:
         tok = self.lex.getNextToken()
         self.match(tok, TokenType.ID_TOK)
-        
-        return Id(tok.getLexeme()[0])
+        if (tokenType == TokenType.FUNCTION_TOK):
+            name = tok.getLexeme()
+            tok = self.lex.getNextToken()
+            if (tok.getTokType() == TokenType.RETURN_TOK):
+                tok = self.lex.getNextToken()
+                self.match(tok, TokenType.TYPE_TOK)
+                tok = self.lex.getNextToken()
+                return Id(ch = name, mem = self.mem, type = tok.getTokType())
+            else:
+                return Id(ch = name, mem = self.mem, type = TokenType.NONE_TOK)
+        elif(tokenType == TokenType.DEFINE_TOK):
+            name = tok.getLexeme()
+            tok = self.lex.getNextToken()
+            self.match(tok, TokenType.OF_TOK)
+            tok = self.lex.getNextToken()
+            self.match(tok, TokenType.TYPE_TOK)
+            tok = self.lex.getNextToken()
+            return Id(ch = name, mem = self.mem, type = tok.getTokType())
+        elif(tokenType == TokenType.SET_TOK):
+            name = tok.getLexeme()
+            
+        else:
+            return Id(ch = tok.getLexeme(), mem = self.mem, type = tokenType)
 
     def getConstant(self) -> Expression:
         tok = self.lex.getNextToken()
-        self.match(tok, TokenType.CONST_TOK)
-        value = (int)(tok.getLexeme())
+        # self.match(tok, TokenType.CONST_TOK)
+        if (tok.getTokType() not in (TokenType.CONST_TOK, TokenType.STRING_TOK)):
+            raise Exception(f'Invalid token type: {tok.getTokType()}')
+        value = tok.getLexeme()
         
         return Constant(value)
+    
+    def getVars(self):
+        pass
 
     def match(self, tok : Token, tokenType : TokenType) -> None:
         if (tok == None or tokenType == None):
             raise Exception('Parser Exception')
         if (tok.getTokType() != tokenType):
-            raise Exception(f'')
+            self.lex.printLex()
+            raise Exception(f'{tok.getTokType()} is not {tokenType}')

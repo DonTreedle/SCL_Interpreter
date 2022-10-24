@@ -1,4 +1,5 @@
 from Statement import Statement
+from typing import List
 
 class Block():
     def __init__(self) -> None:
@@ -6,7 +7,7 @@ class Block():
     
     def add(self, stmt : Statement):
         if (stmt == None):
-            raise Exception() #TODO
+            raise Exception('Invalid Statement') #TODO
         self.stmts.append(stmt)
     
     def execute(self):

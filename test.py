@@ -1,5 +1,6 @@
 import sys
 from LexicalAnalyzer import LexicalAnalyzer
+from Parser import Parser
 
 def readText():
     src = open("bitops1.scl")
@@ -19,7 +20,10 @@ def parenTest():
     print(s)
 
 def main():
-    LexicalAnalyzer('welcome.scl')
+    # lex = LexicalAnalyzer('welcome.scl')
+    # print(lex.getNextToken().getLexeme())
+    # print(lex.getNextToken().getLexeme())
+    Parser('welcome.scl').parse()
     #readText()
     #equalityTest()
     #parenTest()

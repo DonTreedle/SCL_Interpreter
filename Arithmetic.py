@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from LexicalAnalyzer import LexicalAnalyzer
 from Memory import Memory
+from TokenType import TokenType
 
 class Operator(Enum):
     ADD_OP = 1          #+
@@ -23,37 +24,59 @@ class RelativeOperator(Enum):
 class Expression(ABC):
 
     @abstractmethod
-    def evaluate(self) -> int:
+    def evaluate(self):
         pass
 
 class Constant(Expression):
-    def __init__(self, value : int) -> None:
+    def __init__(self, value) -> None:
         super().__init__()
         self.value = value
     
-    def evaluate(self) -> int:
+    def evaluate(self):
         return self.value
 
 class Id(Expression):
-    def __init__(self, ch) -> None:
+    def __init__(self, ch, mem : Memory, type = None) -> None:
         super().__init__()
-        if (not LexicalAnalyzer.isValidIdentifier(ch)):
-            raise Exception()
-        self.ch = ch
+        if type:
+            if (not self.isValidIdentifier(ch = ch)):
+                raise Exception('Invalid Identifier')
+            if (not self.isValidType(type = type)):
+                raise Exception('Invalid Type')
+            self.mem = mem
+            self.ch = ch
+            self.type = type
+        else:
+            if (not self.isValidIdentifier(ch = ch)):
+                raise Exception('Invalid Identifier')
+            self.mem = mem
+            self.ch = ch
     
     def evaluate(self) -> int:
-        return Memory.fetch(self.ch)
+        if (self.type == TokenType.SET_TOK):
+            return Memory.fetch(self.ch)
+        return self.mem.store(self.ch)
     
-    def getChar(self):
+    def setId(self, value): #create a place in memory for id
+        return self.mem.store(self.ch, value)
+    
+    def getId(self):
         return self.ch
+    
+    def isValidIdentifier(self, ch) -> bool:
+        return ch.isalpha()
+    
+    def isValidType(self, type) -> bool:
+        return type in (TokenType.INT_TOK, TokenType.SHORT_TOK, TokenType.LONG_TOK, TokenType.DOUBLE_TOK, TokenType.BYTE_TOK, TokenType.HEX_TOK, TokenType.NONE_TOK, TokenType.SET_TOK)
+
 
 class BinaryExpression(Expression):
     def __init__(self, op : Operator, expr1 : Expression, expr2 : Expression) -> None:
         super().__init__()
         if (op == None):
-            raise Exception() #TODO
+            raise Exception('Invalid Operation') #TODO
         if (expr1 == None or expr2 == None):
-            raise Exception() #TODO
+            raise Exception('Invalid Expression(s)') #TODO
         self.expr1 = expr1
         self.expr2 = expr2
         self.op = op
@@ -81,9 +104,9 @@ class BooleanExpression(Expression):
     def __init__(self, op : Operator, expr1 : Expression, expr2 : Expression) -> None:
         super().__init__()
         if (op == None):
-            raise Exception() #TODO
+            raise Exception('Invalid Operator') #TODO
         if (expr1 == None or expr2 == None):
-            raise Exception() #TODO
+            raise Exception('Invalid Expression. You forgot one.') #TODO
         self.expr1 = expr1
         self.expr2 = expr2
         self.op = op
@@ -105,3 +128,5 @@ class BooleanExpression(Expression):
             value = self.expr1.evaluate() != self.expr2.evaluate()
         
         return value
+    
+    
