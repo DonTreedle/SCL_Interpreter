@@ -13,8 +13,8 @@ class LexicalAnalyzer:
             self.processLine(self.line, self.lineNumber)
             self.lineNumber += 1
         self.tokens.append(Token(self.lineNumber, 1, "EOS", TokenType.EOS_TOK))
-        for i in self.tokens:
-            print(f"lexeme: {i.getLexeme()}\ntoken type: {i.getTokType()}\n")
+        #for i in self.tokens:
+        #    print(f"lexeme: {i.getLexeme()}\ntoken type: {i.getTokType()}\n")
         #print(f"lines: {self.lineNumber}")
         #tokens_json = json.dumps(self.tokens)
         #return tokens_json

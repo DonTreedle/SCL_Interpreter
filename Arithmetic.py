@@ -28,11 +28,14 @@ class Expression(ABC):
         pass
 
 class Constant(Expression):
-    def __init__(self, value) -> None:
+    def __init__(self, value, type) -> None:
         super().__init__()
         self.value = value
+        self.type = type
     
     def evaluate(self):
+        if self.type == TokenType.STRING_TOK:
+            return self.value[1:-1]
         return self.value
 
 class Id(Expression):
@@ -42,7 +45,7 @@ class Id(Expression):
             if (not self.isValidIdentifier(ch = ch)):
                 raise Exception('Invalid Identifier')
             if (not self.isValidType(type = type)):
-                raise Exception('Invalid Type')
+                raise Exception(f'Invalid Type {type}')
             self.mem = mem
             self.ch = ch
             self.type = type
@@ -52,13 +55,14 @@ class Id(Expression):
             self.mem = mem
             self.ch = ch
     
-    def evaluate(self) -> int:
-        if (self.type == TokenType.SET_TOK):
-            return Memory.fetch(self.ch)
-        return self.mem.store(self.ch)
+    def evaluate(self):
+        # if (self.type == TokenType.SET_TOK):
+        #     return Memory.fetch(self.ch)
+        # return self.mem.store(self.ch)
+        return self.mem.fetch(self.ch)
     
     def setId(self, value): #create a place in memory for id
-        return self.mem.store(self.ch, value)
+        self.mem.store(self.ch, value, type=self.type)
     
     def getId(self):
         return self.ch

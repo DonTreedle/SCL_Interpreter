@@ -82,7 +82,7 @@ class IfStatement(Statement):
             self.blk2.execute()
 
 class PrintStatement(Statement):
-    def __init__(self, expr : Expression) -> None:
+    def __init__(self, *expr : Expression) -> None:
         super().__init__()
         if (expr == None):
             raise Exception('Invalid Expression')
@@ -90,7 +90,11 @@ class PrintStatement(Statement):
         self.expr = expr
     
     def execute(self) -> None:
-        print(self.expr.evaluate())
+        s = ""
+        for i in self.expr:
+            for j in i:
+                s = s + str(j.evaluate())
+        print(s)
 
 class WhileStatement(Statement):
     def __init__(self, expr : BooleanExpression, blk : Block) -> None:
@@ -108,7 +112,7 @@ class WhileStatement(Statement):
             self.blk.execute()
 
 class AssignmentStatement(Statement):
-    def __init__(self, var : Id,  expr : Expression, mem : Memory) -> None:
+    def __init__(self, var,  expr : Expression, mem : Memory) -> None:
         if (var == None):
             raise Exception('null Id argument')
         if(expr == None):
@@ -120,10 +124,10 @@ class AssignmentStatement(Statement):
         self.mem = mem
     
     def execute(self) -> None:
-        self.mem.store(self.var.getId(), self.expr.evaluate())
+        self.mem.store(self.var, self.expr.evaluate())
 
 class FunctionStatement(Statement):
-    def __init__(self, vars : Block, ) -> None:
+    def __init__(self, vars : Block) -> None:
         super().__init__()
 
 

@@ -1,11 +1,14 @@
-from Block import Block
+from Statement import Block
 
 class Program():
-    def __init__(self, blk : Block) -> None:
-        if (blk == None):
+    def __init__(self, blks : Block) -> None:
+        if (blks == None):
             raise Exception()
         
-        self.blk = blk
+        self.blks = blks
 
     def execute(self):
-        self.blk.execute()
+        for i in self.blks:
+            for j in i:
+                for k in j:
+                    k.execute()
