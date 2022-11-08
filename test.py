@@ -20,14 +20,8 @@ def parenTest():
     print(s)
 
 def main():
-    #lex = LexicalAnalyzer('welcome.scl')
-    #lex.printLex()
-    # print(lex.getNextToken().getLexeme())
-    # print(lex.getNextToken().getLexeme())
+    #LexicalAnalyzer('bitops1.scl').printLex()
     Parser('bitops1.scl').parse().execute()
-    #readText()
-    #equalityTest()
-    #parenTest()
 
 if __name__ == "__main__":
     main()

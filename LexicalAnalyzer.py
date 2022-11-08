@@ -1,6 +1,5 @@
-import json
 from Token import Token
-from TokenType import TokenType
+from TokenType import TokenType, ValueType
 
 class LexicalAnalyzer:
 
@@ -13,11 +12,6 @@ class LexicalAnalyzer:
             self.processLine(self.line, self.lineNumber)
             self.lineNumber += 1
         self.tokens.append(Token(self.lineNumber, 1, "EOS", TokenType.EOS_TOK))
-        #for i in self.tokens:
-        #    print(f"lexeme: {i.getLexeme()}\ntoken type: {i.getTokType()}\n")
-        #print(f"lines: {self.lineNumber}")
-        #tokens_json = json.dumps(self.tokens)
-        #return tokens_json
     
     def processLine(self, line, lineNumber):
         if (line == None or lineNumber < 1):
@@ -35,7 +29,7 @@ class LexicalAnalyzer:
             elif(tokType == TokenType.PRINT_TOK):
                 line = self.splitOnComma()
                 isDisplay = True
-            elif(tokType == TokenType.LEFT_PAREN_TOK):
+            elif(tokType == TokenType.L_PAREN_TOK):
                 line = self.splitOnParen(tokType)
                 lexeme = "("
             if(tokType == TokenType.DESC_TOK):
@@ -43,7 +37,7 @@ class LexicalAnalyzer:
                 index += len(lexeme)
                 index = self.skipWhiteSpace(line, index)
                 continue
-            self.tokens.append(Token(lineNumber + 1, index + 1, lexeme, tokType))
+            self.tokens.append(Token(lineNumber, index + 1, lexeme, tokType))
             
             index += len(lexeme)
             index = self.skipWhiteSpace(line, index)
@@ -67,7 +61,6 @@ class LexicalAnalyzer:
                 tokType = TokenType.WHILE_TOK
             elif(lexeme == "display"):
                 tokType = TokenType.PRINT_TOK
-                #TODO CHECK FOR COMMA
             elif(lexeme == "description"):
                 tokType = TokenType.DESC_TOK
             elif(lexeme == "symbol"):
@@ -81,7 +74,7 @@ class LexicalAnalyzer:
             elif(lexeme == "type"):
                 tokType = TokenType.TYPE_TOK
             elif(lexeme == "integer"):
-                tokType = TokenType.INT_TOK
+                tokType = ValueType.INT_TOK
             elif(lexeme == "variables"):
                 tokType = TokenType.VARS_TOK
             elif(lexeme == "is"):
@@ -93,7 +86,7 @@ class LexicalAnalyzer:
             elif(lexeme == "type"):
                 tokType = TokenType.TYPE_TOK
             elif(lexeme == "double"):
-                tokType = TokenType.DOUBLE_TOK
+                tokType = ValueType.DOUBLE_TOK
             elif(lexeme == "set"):
                 tokType = TokenType.SET_TOK
             elif(lexeme == "exit"):
@@ -105,11 +98,11 @@ class LexicalAnalyzer:
             elif(lexeme == "unsigned"):
                 tokType = TokenType.UNSIGN_TOK
             elif(lexeme == "short"):
-                tokType = TokenType.SHORT_TOK
+                tokType = ValueType.SHORT_TOK
             elif(lexeme == "long"):
-                tokType = TokenType.LONG_TOK
+                tokType = ValueType.LONG_TOK
             elif(lexeme == "byte"):
-                tokType = TokenType.BYTE_TOK
+                tokType = ValueType.BYTE_TOK
             elif(lexeme == "begin"):
                 tokType = TokenType.BEGIN_TOK
             elif(lexeme == "band"):
@@ -119,12 +112,12 @@ class LexicalAnalyzer:
             elif(lexeme == "bxor"):
                 tokType = TokenType.BXOR_TOK
             elif(lexeme == "negate"):
-                tokType = TokenType.NEG_TOK
+                tokType = TokenType.BNOT_TOK
             elif(lexeme == "lshift"):
                 tokType = TokenType.L_SHIFT_TOK
             elif(lexeme == "rshift"):
                 tokType = TokenType.R_SHIFT_TOK
-            elif(len(self.tokens) > 1 and (self.tokens[-1].getTokType() in (TokenType.SYM_TOK, TokenType.DEFINE_TOK, TokenType.FUNCTION_TOK, TokenType.ENDFUN_TOK, TokenType.SET_TOK, TokenType.ASSIGN_TOK, TokenType.BAND_TOK, TokenType.BOR_TOK, TokenType.BXOR_TOK, TokenType.NEG_TOK, TokenType.LEFT_PAREN_TOK)) or isDisplay):
+            elif(len(self.tokens) > 1 and (self.tokens[-1].getTokType() in (TokenType.SYM_TOK, TokenType.DEFINE_TOK, TokenType.FUNCTION_TOK, TokenType.ENDFUN_TOK, TokenType.SET_TOK, TokenType.ASSIGN_TOK, TokenType.BAND_TOK, TokenType.BOR_TOK, TokenType.BXOR_TOK, TokenType.BNOT_TOK, TokenType.L_PAREN_TOK)) or isDisplay):
                 if(self.isValidIdentifier(lexeme[0])):
                     tokType = TokenType.ID_TOK
                 else:
@@ -133,11 +126,11 @@ class LexicalAnalyzer:
                 raise Exception(f"invalid lexeme at row number {lineNumber} and column {colNumber}, lexeme: {lexeme}, line: {self.line}")
         elif(lexeme[0].isdigit()):
             if(self.allDigits(lexeme)):
-                tokType = TokenType.CONST_TOK
+                tokType = ValueType.CONST_TOK
             elif(lexeme[-1] == 'h'):
-                tokType = TokenType.HEX_TOK
+                tokType = ValueType.HEX_TOK
             elif(lexeme.isdecimal()):
-                tokType = TokenType.CONST_TOK
+                tokType = ValueType.CONST_TOK
             else:
                 raise Exception(f"invalid lexeme at row number {lineNumber  + 1} and column {colNumber + 1}, lexeme: {lexeme}")
         elif(lexeme == "+"):
@@ -157,9 +150,9 @@ class LexicalAnalyzer:
         elif(lexeme == "="):
             tokType = TokenType.ASSIGN_TOK
         elif(lexeme[0] == "("):
-            tokType = TokenType.LEFT_PAREN_TOK
+            tokType = TokenType.L_PAREN_TOK
         elif(lexeme[-1] == ")"):
-            tokType = TokenType.RIGHT_PAREN_TOK
+            tokType = TokenType.R_PAREN_TOK
         elif(lexeme == ">="):
             tokType = TokenType.GE_TOK
         elif(lexeme == ">"):
@@ -173,7 +166,7 @@ class LexicalAnalyzer:
         elif(lexeme == ":"):
             tokType = TokenType.COL_TOK
         elif(lexeme[0] == "\""):
-            tokType = TokenType.STRING_TOK
+            tokType = ValueType.STRING_TOK
         elif(lexeme[0:2] == "//"):
             self.skipLineComment(colNumber, lineNumber)
             return None
@@ -184,9 +177,6 @@ class LexicalAnalyzer:
     def allDigits(self, s):
         if(s == None):
             raise Exception("Lexical Exception")
-        #i = 0
-        #while (i < len(s) and s[i].isdecimal()):
-            #i += 1
         try:
             float(s)
             return True
@@ -220,7 +210,6 @@ class LexicalAnalyzer:
             index = self.skipWhiteSpace(line, index)
             lexeme = self.getLexeme(line, lineNumber, index)
             if(lexeme == "*/"):
-                #self.tokens.append(Token(lineNumber + 1, index + 1, "*/", TokenType.END_DESC_TOK))
                 self.lineNumber = lineNumber
                 return
     
@@ -237,7 +226,7 @@ class LexicalAnalyzer:
     
     def splitOnParen(self, tokType):
         line = self.line
-        if (tokType == TokenType.LEFT_PAREN_TOK):
+        if (tokType == TokenType.L_PAREN_TOK):
             line = line.replace("(", "( ")
             line = line.replace(")", " )")
         return line
@@ -256,8 +245,8 @@ class LexicalAnalyzer:
         return ch.isalpha()
     
     def isValidType(self, type) -> bool:
-        return type in (TokenType.INT_TOK, TokenType.SHORT_TOK, TokenType.LONG_TOK, TokenType.DOUBLE_TOK, TokenType.BYTE_TOK, TokenType.HEX_TOK)
+        return type in ValueType
 
     def printLex(self):
         for i in self.tokens:
-            print(f"The next token type is: {i.getTokType()}\tNext lexeme is: {i.getLexeme()}")
+            print(f"The next token type is: {i.getTokType()}\tNext lexeme is: {i.getLexeme()}\tLine Number: {i.getRowNumber()}")

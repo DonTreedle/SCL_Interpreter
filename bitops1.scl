@@ -1,4 +1,3 @@
-
 import "sysplm.h"
 description
    Program: bitops1.scl
@@ -57,5 +56,4 @@ implementations
       set a = a bor d2   // copy d2 to low byte of a
       display "a: ", a
       exit
-  endfun main 
-
+  endfun main

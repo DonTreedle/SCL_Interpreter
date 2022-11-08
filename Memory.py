@@ -21,7 +21,7 @@ class Memory():
         return name
     
     def isValidIdentifier(self, ch) -> bool:
-        return ch.isalpha()
+        return ch[0].isalpha()
 
     def displayMemory(self):
         for i in range(26):

@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from LexicalAnalyzer import LexicalAnalyzer
 from Memory import Memory
-from TokenType import TokenType
+from TokenType import TokenType, ValueType
 
 class Operator(Enum):
     ADD_OP = 1          #+
@@ -21,6 +21,14 @@ class RelativeOperator(Enum):
     EQ_OP = 5           #==
     NE_OP = 6           #!=
 
+class BitwiseOperator(Enum):
+    BNOT_OP = 1         #negate
+    BAND_OP = 2         #band
+    BOR_OP = 3          #bor
+    BXOR_OP = 4         #bxor
+    L_SHIFT_OP = 5      #lshift
+    R_SHIFT_OP = 6      #rshift
+
 class Expression(ABC):
 
     @abstractmethod
@@ -34,7 +42,7 @@ class Constant(Expression):
         self.type = type
     
     def evaluate(self):
-        if self.type == TokenType.STRING_TOK:
+        if self.type == ValueType.STRING_TOK:
             return self.value[1:-1]
         return self.value
 
@@ -51,7 +59,7 @@ class Id(Expression):
             self.type = type
         else:
             if (not self.isValidIdentifier(ch = ch)):
-                raise Exception('Invalid Identifier')
+                raise Exception(f'Invalid Identifier: {ch}')
             self.mem = mem
             self.ch = ch
     
@@ -68,10 +76,10 @@ class Id(Expression):
         return self.ch
     
     def isValidIdentifier(self, ch) -> bool:
-        return ch.isalpha()
+        return ch[0].isalpha()
     
     def isValidType(self, type) -> bool:
-        return type in (TokenType.INT_TOK, TokenType.SHORT_TOK, TokenType.LONG_TOK, TokenType.DOUBLE_TOK, TokenType.BYTE_TOK, TokenType.HEX_TOK, TokenType.NONE_TOK, TokenType.SET_TOK)
+        return type in ValueType
 
 
 class BinaryExpression(Expression):
@@ -105,10 +113,10 @@ class BinaryExpression(Expression):
 
 class BooleanExpression(Expression):
     
-    def __init__(self, op : Operator, expr1 : Expression, expr2 : Expression) -> None:
+    def __init__(self, op : RelativeOperator, expr1 : Expression, expr2 : Expression) -> None:
         super().__init__()
         if (op == None):
-            raise Exception('Invalid Operator') #TODO
+            raise Exception(f'Invalid Operator: {op}') #TODO
         if (expr1 == None or expr2 == None):
             raise Exception('Invalid Expression. You forgot one.') #TODO
         self.expr1 = expr1
@@ -133,4 +141,33 @@ class BooleanExpression(Expression):
         
         return value
     
+class BitwiseExpression(Expression):
+    def __init__(self, op : BitwiseOperator, expr1 : Expression, expr2 : Expression) -> None:
+        super().__init__()
+        if (op == None):
+            raise Exception(f'Invalid Operator: {op}')
+        if (op == BitwiseOperator.BNOT_OP and expr1 == None and expr2 != None):
+            self.expr = expr2
+            self.op = op
+        if (expr1 == None or expr2 == None):
+            raise Exception('Invalid Expression')
+        self.expr1 = expr1
+        self.expr2 = expr2
+        self.op = op
     
+    def evaluate(self):
+        value = bin(0)
+
+        if (self.op == BitwiseOperator.BNOT_OP):
+            value = ~self.expr.evaluate()
+        elif (self.op == BitwiseOperator.BAND_OP):
+            value = self.expr1.evaluate() & self.expr2.evaluate()
+        elif (self.op == BitwiseOperator.BOR_OP):
+            value = self.expr1.evaluate() | self.expr2.evaluate()
+        elif (self.op == BitwiseOperator.BXOR_OP):
+            value = self.expr1.evaluate() ^ self.expr2.evaluate()
+        elif (self.op == BitwiseOperator.L_SHIFT_OP):
+            value = self.expr1.evaluate() - self.expr2.evaluate()
+        elif (self.op == BitwiseOperator.R_SHIFT_OP):
+            value = self.expr1.evaluate() - self.expr2.evaluate()
+        return value
