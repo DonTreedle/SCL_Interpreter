@@ -1,0 +1,10 @@
+__pycache__/Parser.cpython-310.pyc
+__pycache__/Arithmetic.cpython-310.pyc
+__pycache__/AssignmentStatement.cpython-310.pyc
+__pycache__/Block.cpython-310.pyc
+__pycache__/LexicalAnalyzer.cpython-310.pyc
+__pycache__/Memory.cpython-310.pyc
+__pycache__/Program.cpython-310.pyc
+__pycache__/Statement.cpython-310.pyc
+__pycache__/Token.cpython-310.pyc
+__pycache__/TokenType.cpython-310.pyc

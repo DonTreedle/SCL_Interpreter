@@ -24,7 +24,7 @@ def main():
     #lex.printLex()
     # print(lex.getNextToken().getLexeme())
     # print(lex.getNextToken().getLexeme())
-    Parser('welcome.scl').parse().execute()
+    Parser('bitops1.scl').parse().execute()
     #readText()
     #equalityTest()
     #parenTest()
