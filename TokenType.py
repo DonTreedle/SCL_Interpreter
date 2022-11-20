@@ -1,6 +1,8 @@
 from enum import Enum
 
 class TokenType(Enum):
+    #KEY:
+    #TOKEN = 0          #raw text version ... extended description
     ID_TOK = 1          #Identifier
     ADD_TOK = 2         #+
     MUL_TOK = 3         #*
@@ -34,31 +36,32 @@ class TokenType(Enum):
     DESC_TOK = 31       #description
     END_DESC_TOK = 32   #*/ ... end of description
     SYM_TOK = 33        #symbol ... define functionality
-    HCONST_TOK = 34     #Some Hexidecimal Number
+    HEX_TOK = 34        #Some Hexidecimal Number
     IMP_TOK = 35        #import
     STRING_TOK = 36     #Some String
     COMMENT_TOK = 37    #//
-    IMPLE_TOK = 38      #
-    IS_TOK = 39         #
-    VARS_TOK = 40       #
-    DEFINE_TOK = 41     #
-    OF_TOK = 42         #
-    BEGIN_TOK = 43      #
-    SET_TOK = 44        #
-    BAND_TOK = 45       #
-    BOR_TOK = 46        #
-    BXOR_TOK = 47       #
-    NEG_TOK = 48        #
-    RETURN_TOK = 49     #
-    TYPE_TOK = 50       #
-    INT_TOK = 51        #
-    SHORT_TOK = 52      #
-    LONG_TOK = 53       #
-    DOUBLE_TOK = 54     #
-    EXIT_TOK = 55       #
-    GLOB_TOK = 56       #
-    DECL_TOK = 57       #
-    UNSIGN_TOK = 58     #
-    BYTE_TOK = 59       #
-    L_SHIFT_TOK = 60    #
-    R_SHIFT_TOK = 61    #
+    IMPLE_TOK = 38      #implementations
+    IS_TOK = 39         #is
+    VARS_TOK = 40       #variables
+    DEFINE_TOK = 41     #define ... initialization of variable
+    OF_TOK = 42         #of ... succeeded by TYPE_TOK
+    BEGIN_TOK = 43      #begin
+    SET_TOK = 44        #set ... redefine variable
+    BAND_TOK = 45       #bitwise and
+    BOR_TOK = 46        #bitwise or
+    BXOR_TOK = 47       #bitwise xor
+    NEG_TOK = 48        #negate
+    RETURN_TOK = 49     #return
+    TYPE_TOK = 50       #type ... preceded by OF_TOK
+    INT_TOK = 51        #int type
+    SHORT_TOK = 52      #short type
+    LONG_TOK = 53       #long type
+    DOUBLE_TOK = 54     #double type
+    EXIT_TOK = 55       #exit
+    GLOB_TOK = 56       #global
+    DECL_TOK = 57       #declarations
+    UNSIGN_TOK = 58     #unsigned
+    BYTE_TOK = 59       #byte type
+    L_SHIFT_TOK = 60    #lshift
+    R_SHIFT_TOK = 61    #rshift
+    NONE_TOK = 62       #none type ... used for when a function returns nothing

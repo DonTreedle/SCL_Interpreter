@@ -10,15 +10,15 @@ symbol MN 0B3h     // 1011 0011
        
 global declarations
 variables
-   define a of type unsigned integer
-   define b of type unsigned short
-   define c of type unsigned long
+   define a of type integer
+   define b of type short
+   define c of type long
 
-   implementations
+implementations
 
-  description
+   description
       This is the main function of the application.
-      */
+   */
   function main is
     variables
        define vara of type byte

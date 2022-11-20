@@ -1,3 +1,8 @@
+import json
+
+from TokenType import TokenType
+
+
 class Token:
     def __init__(self, rowNumber, colNumber, lexeme, tokType):
         if (rowNumber <= 0):
@@ -13,11 +18,14 @@ class Token:
         self.lexeme = lexeme
         self.tokType = tokType
     
-    def getRowNumber(self):
+    def getRowNumber(self) -> int:
         return self.rowNumber
-    def getColNumber(self):
+    def getColNumber(self) -> int:
         return self.colNumber
     def getLexeme(self):
         return self.lexeme
-    def getTokType(self):
+    def getTokType(self) -> TokenType:
         return self.tokType
+
+    def toJson(self):
+        return json.dumps(self, default=lambda o: o.__dict__)
