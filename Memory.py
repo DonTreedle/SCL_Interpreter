@@ -13,7 +13,7 @@ class Memory():
             self.mem[self.getIndex(name)] = (kwargs['type'], value)
 
     def fetch(self, name):
-        return self.mem[self.getIndex(name)][1]
+        return self.mem[self.getIndex(name)]
 
     def getIndex(self, name):
         if (not self.isValidIdentifier(name)):

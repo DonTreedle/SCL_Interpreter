@@ -3,7 +3,7 @@ from Memory import Memory
 from Program import Program
 from Statement import Block, DefineStatement, ForStatement, IfStatement, PrintStatement, Statement, WhileStatement, Iter, AssignmentStatement
 from Token import Token
-from TokenType import TokenType, ValueType
+from TokenType import TokenType, ValueType, OperatorType
 from LexicalAnalyzer import LexicalAnalyzer
 
 class Parser:
@@ -125,10 +125,10 @@ class Parser:
     def getPrintStatement(self) -> Statement:
         tok = self.lex.getNextToken()
         self.match(tok, TokenType.PRINT_TOK)
-        expr = []
-        while(self.lex.getLookaheadToken().getTokType() in (TokenType.ID_TOK, ValueType.STRING_TOK)):
-            expr.append(self.getArithmeticExpression())
-        
+        expr = None
+        if (self.lex.getLookaheadToken().getTokType() in (TokenType.ID_TOK, ValueType.STRING_TOK, OperatorType.ADD_TOK)):
+            expr = self.getArithmeticExpression()
+        print(expr)
         return PrintStatement(expr)
 
     def getForStatement(self) -> Statement:
@@ -177,68 +177,79 @@ class Parser:
         
         return tok.getTokType() in (TokenType.SET_TOK, TokenType.IF_TOK, TokenType.WHILE_TOK, TokenType.FOR_TOK, TokenType.PRINT_TOK, TokenType.DEFINE_TOK)
     
+
+
     def getArithmeticExpression(self) -> Expression:
         tok = self.lex.getLookaheadToken()
-        print(tok.getLexeme())
-        if (tok.getTokType() == TokenType.ID_TOK):
-            var = self.createId()
-        elif (tok.getTokType() in ValueType):
-            expr = self.getConstant()
-        elif (tok.getTokType() == TokenType.BNOT_TOK):
-            expr = self.getBitwiseExpression()
-        else:
-            expr = self.getBinaryExpression()
-        
+        expr = []
+        while (tok.getTokType() in (OperatorType, ValueType.CONST_TOK, TokenType.ID_TOK, ValueType.STRING_TOK, OperatorType.ADD_TOK, OperatorType.DIV_TOK)):
+            if (tok.getTokType() in (ValueType.CONST_TOK, ValueType.STRING_TOK)):
+                expr.append(self.getConstant())
+            elif (tok.getTokType() == TokenType.ID_TOK):
+                tok = self.lex.getNextToken()
+                expr.append(Id(ch = tok.getLexeme(), mem = self.memory))
+            elif (tok.getTokType() in (OperatorType.ADD_TOK, OperatorType.DIV_TOK)):
+                expr.append(self.getBinaryExpression(expr))
+            tok = self.lex.getLookaheadToken()
+                
+        # if (tok.getTokType() == TokenType.ID_TOK):
+        #     var = self.createId()
+        # elif (tok.getTokType() in ValueType):
+        #     expr = self.getConstant()
+        # elif (tok.getTokType() == TokenType.BNOT_TOK):
+        #     expr = self.getBitwiseExpression()
+        # else:
+        #     expr = self.getBinaryExpression()
+
+        #TODO order of operations in list !!!!!!!!!!!!!!!!!!!!!!!!!!
         return expr
-    
-    def getBinaryExpression(self) -> Expression:
+
+    def getBinaryExpression(self, expr : Expression) -> Expression:
         tok = self.lex.getNextToken()
-        if (tok.getTokType() == TokenType.ADD_TOK):
-            self.match(tok, TokenType.ADD_TOK)
+        if (tok.getTokType() == OperatorType.ADD_TOK):
+            self.match(tok, OperatorType.ADD_TOK)
             op = Operator.ADD_OP
-        elif (tok.getTokType() == TokenType.SUB_TOK):
-            self.match(tok, TokenType.SUB_TOK)
+        elif (tok.getTokType() == OperatorType.SUB_TOK):
+            self.match(tok, OperatorType.SUB_TOK)
             op = Operator.SUB_OP
-        elif (tok.getTokType() == TokenType.MUL_TOK):
-            self.match(tok, TokenType.MUL_TOK)
+        elif (tok.getTokType() == OperatorType.MUL_TOK):
+            self.match(tok, OperatorType.MUL_TOK)
             op = Operator.MUL_OP
-        elif (tok.getTokType() == TokenType.DIV_TOK):
-            self.match(tok, TokenType.DIV_TOK)
+        elif (tok.getTokType() == OperatorType.DIV_TOK):
+            self.match(tok, OperatorType.DIV_TOK)
             op = Operator.DIV_OP
-        elif (tok.getTokType() == TokenType.REV_DIV_TOK):
-            self.match(tok, TokenType.REV_DIV_TOK)
+        elif (tok.getTokType() == OperatorType.REV_DIV_TOK):
+            self.match(tok, OperatorType.REV_DIV_TOK)
             op = Operator.REV_DIV_OP
-        elif (tok.getTokType() == TokenType.EXP_TOK):
-            self.match(tok, TokenType.EXP_TOK)
+        elif (tok.getTokType() == OperatorType.EXP_TOK):
+            self.match(tok, OperatorType.EXP_TOK)
             op = Operator.EXP_OP
-        elif (tok.getTokType() == TokenType.MOD_TOK):
-            self.match(tok, TokenType.MOD_TOK)
+        elif (tok.getTokType() == OperatorType.MOD_TOK):
+            self.match(tok, OperatorType.MOD_TOK)
             op = Operator.MOD_OP
-        elif (tok.getTokType() in (TokenType.BAND_TOK, TokenType.BOR_TOK, TokenType.BXOR_TOK)):
+        elif (tok.getTokType() in (OperatorType.BAND_TOK, OperatorType.BOR_TOK, OperatorType.BXOR_TOK)):
             return self.getBitwiseExpression()
         else:
             raise Exception(f'Invalid BinaryExpression: {tok.getTokType()}; line: {tok.getRowNumber()}')
         
-        expr1 = self.getArithmeticExpression()
         expr2 = self.getArithmeticExpression()
-        
-        return BinaryExpression(op, expr1, expr2)
+        return BinaryExpression(op, expr, expr2)
         
 
     def getBooleanExpression(self) -> BooleanExpression:
         op = Operator
         tok = self.lex.getNextToken()
-        if (tok.getTokType() == TokenType.EQ_TOK):
+        if (tok.getTokType() == OperatorType.EQ_TOK):
             op = RelativeOperator.EQ_OP
-        elif (tok.getTokType() == TokenType.NE_TOK):
+        elif (tok.getTokType() == OperatorType.NE_TOK):
             op = RelativeOperator.NE_OP
-        elif (tok.getTokType() == TokenType.GT_TOK):
+        elif (tok.getTokType() == OperatorType.GT_TOK):
             op = RelativeOperator.GT_OP
-        elif (tok.getTokType() == TokenType.GE_TOK):
+        elif (tok.getTokType() == OperatorType.GE_TOK):
             op = RelativeOperator.GE_OP
-        elif (tok.getTokType() == TokenType.LT_TOK):
+        elif (tok.getTokType() == OperatorType.LT_TOK):
             op = RelativeOperator.LT_OP
-        elif (tok.getTokType() == TokenType.LE_TOK):
+        elif (tok.getTokType() == OperatorType.LE_TOK):
             op = RelativeOperator.LE_OP
         else:
             raise Exception(f'Invalid BooleanExpression: {tok.getTokType()}') #TODO
@@ -251,17 +262,17 @@ class Parser:
     def getBitwiseExpression(self) -> Expression:
         op = BitwiseOperator
         tok = self.lex.getNextToken()
-        if (tok.getTokType() == TokenType.BAND_TOK):
+        if (tok.getTokType() == OperatorType.BAND_TOK):
             op = BitwiseOperator.BAND_OP
-        elif (tok.getTokType() == TokenType.BOR_TOK):
+        elif (tok.getTokType() == OperatorType.BOR_TOK):
             op = BitwiseOperator.BOR_OP
-        elif (tok.getTokType() == TokenType.BXOR_TOK):
+        elif (tok.getTokType() == OperatorType.BXOR_TOK):
             op = BitwiseOperator.BXOR_OP
-        elif (tok.getTokType() == TokenType.BNOT_TOK):
+        elif (tok.getTokType() == OperatorType.BNOT_TOK):
             op = BitwiseOperator.BNOT_OP
-        elif (tok.getTokType() == TokenType.L_SHIFT_TOK):
+        elif (tok.getTokType() == OperatorType.L_SHIFT_TOK):
             op = BitwiseOperator.L_SHIFT_OP
-        elif (tok.getTokType() == TokenType.R_SHIFT_TOK):
+        elif (tok.getTokType() == OperatorType.R_SHIFT_TOK):
             op = BitwiseOperator.R_SHIFT_OP
         
         expr1 = self.getArithmeticExpression()

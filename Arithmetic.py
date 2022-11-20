@@ -41,10 +41,13 @@ class Constant(Expression):
         self.value = value
         self.type = type
     
+    def getType(self):
+        return self.type
+    
     def evaluate(self):
         if self.type == ValueType.STRING_TOK:
             return self.value[1:-1]
-        return self.value
+        return float(self.value)
 
 class Id(Expression):
     def __init__(self, ch, mem : Memory, type = None) -> None:
@@ -67,7 +70,7 @@ class Id(Expression):
         # if (self.type == TokenType.SET_TOK):
         #     return Memory.fetch(self.ch)
         # return self.mem.store(self.ch)
-        return self.mem.fetch(self.ch)
+        return self.mem.fetch(self.ch)[1]
     
     def setId(self, value): #create a place in memory for id
         self.mem.store(self.ch, value, type=self.type)

@@ -1,5 +1,5 @@
 from Token import Token
-from TokenType import TokenType, ValueType
+from TokenType import TokenType, ValueType, OperatorType
 
 class LexicalAnalyzer:
 
@@ -117,7 +117,7 @@ class LexicalAnalyzer:
                 tokType = TokenType.L_SHIFT_TOK
             elif(lexeme == "rshift"):
                 tokType = TokenType.R_SHIFT_TOK
-            elif(len(self.tokens) > 1 and (self.tokens[-1].getTokType() in (TokenType.SYM_TOK, TokenType.DEFINE_TOK, TokenType.FUNCTION_TOK, TokenType.ENDFUN_TOK, TokenType.SET_TOK, TokenType.ASSIGN_TOK, TokenType.BAND_TOK, TokenType.BOR_TOK, TokenType.BXOR_TOK, TokenType.BNOT_TOK, TokenType.L_PAREN_TOK)) or isDisplay):
+            elif(len(self.tokens) > 1 and (self.tokens[-1].getTokType() in (TokenType.SYM_TOK, TokenType.DEFINE_TOK, TokenType.FUNCTION_TOK, TokenType.ENDFUN_TOK, TokenType.SET_TOK, TokenType.ASSIGN_TOK, OperatorType.BAND_TOK, OperatorType.BOR_TOK, OperatorType.BXOR_TOK, OperatorType.BNOT_TOK, TokenType.L_PAREN_TOK)) or isDisplay):
                 if(self.isValidIdentifier(lexeme[0])):
                     tokType = TokenType.ID_TOK
                 else:
@@ -134,19 +134,19 @@ class LexicalAnalyzer:
             else:
                 raise Exception(f"invalid lexeme at row number {lineNumber  + 1} and column {colNumber + 1}, lexeme: {lexeme}")
         elif(lexeme == "+"):
-            tokType = TokenType.ADD_TOK
+            tokType = OperatorType.ADD_TOK
         elif(lexeme == "-"):
-            tokType = TokenType.SUB_TOK
+            tokType = OperatorType.SUB_TOK
         elif(lexeme == "*"):
-            tokType = TokenType.MUL_TOK
+            tokType = OperatorType.MUL_TOK
         elif(lexeme == "/"):
-            tokType = TokenType.DIV_TOK
+            tokType = OperatorType.DIV_TOK
         elif(lexeme == "\\"):
-            tokType = TokenType.REV_DIV_TOK
+            tokType = OperatorType.REV_DIV_TOK
         elif(lexeme == "^"):
-            tokType = TokenType.EXP_TOK
+            tokType = OperatorType.EXP_TOK
         elif(lexeme == "%"):
-            tokType = TokenType.MOD_TOK
+            tokType = OperatorType.MOD_TOK
         elif(lexeme == "="):
             tokType = TokenType.ASSIGN_TOK
         elif(lexeme[0] == "("):
@@ -154,15 +154,15 @@ class LexicalAnalyzer:
         elif(lexeme[-1] == ")"):
             tokType = TokenType.R_PAREN_TOK
         elif(lexeme == ">="):
-            tokType = TokenType.GE_TOK
+            tokType = OperatorType.GE_TOK
         elif(lexeme == ">"):
-            tokType = TokenType.GT_TOK
+            tokType = OperatorType.GT_TOK
         elif(lexeme == "<="):
-            tokType = TokenType.LE_TOK
+            tokType = OperatorType.LE_TOK
         elif(lexeme == "=="):
-            tokType = TokenType.EQ_TOK
+            tokType = OperatorType.EQ_TOK
         elif(lexeme == "!="):
-            tokType = TokenType.NE_TOK
+            tokType = OperatorType.NE_TOK
         elif(lexeme == ":"):
             tokType = TokenType.COL_TOK
         elif(lexeme[0] == "\""):

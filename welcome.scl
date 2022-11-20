@@ -9,9 +9,12 @@ implementations
     function main return type integer is
         variables
             define x of type double   // a variable declaration
+            define y of type integer
         begin
             display "Welcome to the world of SCL"
             set x = 45.95 	// assigns a value to variable x
             display "Value of x: ", x
+            set y = 20 / 2 + 5
+            display "Value of y: ", y
     exit                      // execution terminates OK
 endfun main
